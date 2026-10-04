@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>من سيربح المليون - رياضيات سادس</title>
+<style>
+:root{--gold:#f5c542;--gold2:#ffdf7e;--navy:#0b1440;--navy2:#16236b;--line:#6f8cff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,'Noto Naskh Arabic',Arial,sans-serif;min-height:100vh;color:#fff;background:radial-gradient(ellipse at 50% 30%,#2a2f8f 0%,#10154a 45%,#05081f 100%);overflow-x:hidden}
+#rays{position:fixed;inset:-50%;background:repeating-conic-gradient(from 0deg,rgba(120,140,255,.07) 0 6deg,transparent 6deg 18deg);animation:spin 80s linear infinite;pointer-events:none;z-index:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.wrap{position:relative;z-index:1;max-width:1250px;margin:0 auto;padding:14px 16px 60px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.logo{display:flex;align-items:center;gap:12px}
+.disc{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#4a5bd6,#0b1440 70%);border:3px solid var(--gold);display:grid;place-items:center;box-shadow:0 0 18px rgba(245,197,66,.5);font-weight:900;color:var(--gold);font-size:22px}
+.logo b{font-size:clamp(20px,3vw,28px);color:var(--gold);text-shadow:0 0 12px rgba(245,197,66,.5)}
+.tb{background:rgba(255,255,255,.08);border:2px solid var(--line);color:#fff;border-radius:12px;padding:6px 12px;font-family:inherit;font-weight:800;cursor:pointer;font-size:15px}
+.game{display:grid;grid-template-columns:1fr 280px;gap:18px}
+@media(max-width:900px){.game{grid-template-columns:1fr}.ladder{order:2}}
+.stage{display:flex;flex-direction:column;gap:16px;position:relative;}
+
+/* العداد الزمني */
+.timer-box { position: absolute; left: 10px; top: 0; width: 65px; height: 65px; border-radius: 50%; border: 3px solid var(--gold); background: radial-gradient(circle, #2b3cb0, #0b1440); display: grid; place-items: center; font-size: 24px; font-weight: 900; color: var(--gold2); box-shadow: 0 0 15px rgba(245,197,66,.4); z-index: 10; }
+.timer-box.danger { border-color: #ff3b3b; color: #ff3b3b; animation: pulse-danger 1s infinite; }
+@keyframes pulse-danger { 50% { box-shadow: 0 0 25px rgba(255,59,59,.8); transform: scale(1.05); } }
+
+/* حقل إدخال الاسم */
+.name-input { padding: 12px 24px; font-size: 20px; border-radius: 30px; border: 3px solid var(--gold); background: rgba(0,0,0,0.4); color: #fff; text-align: center; margin: 15px auto; display: block; width: 80%; max-width: 350px; outline: none; font-family: inherit; }
+.name-input:focus { background: rgba(0,0,0,0.6); box-shadow: 0 0 15px rgba(245,197,66,.5); }
+
+/* وسائل المساعدة وتنسيقات اللعبة */
+.lifes{display:flex;gap:12px;justify-content:center}
+.life{width:92px;height:58px;border-radius:50%;border:3px solid var(--line);background:radial-gradient(circle,#2b3cb0,#0b1440);color:#fff;font-weight:900;font-size:18px;cursor:pointer;font-family:inherit;position:relative;transition:transform .15s}
+.life:hover{transform:scale(1.06)}
+.life small{display:block;font-size:11px;font-weight:700;opacity:.85}
+.life.used{opacity:.35;cursor:default;pointer-events:none}
+.life.used::after{content:'';position:absolute;inset:8px 6px;background:linear-gradient(135deg,transparent 46%,#ff3b3b 46% 54%,transparent 54%)}
+.lesson{text-align:center;color:var(--gold2);font-weight:800;font-size:16px}
+.bar{position:relative;background:linear-gradient(180deg,#1a2a8a,#0b1440);border:3px solid var(--line);clip-path:polygon(4% 0,96% 0,100% 50%,96% 100%,4% 100%,0 50%);padding:22px 7%;text-align:center;box-shadow:0 0 20px rgba(111,140,255,.4)}
+.qbar{min-height:130px;display:grid;place-items:center;font-size:clamp(20px,2.6vw,30px);font-weight:800;line-height:1.8}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.opts{grid-template-columns:1fr}}
+.opt{cursor:pointer;display:flex;align-items:center;gap:10px;justify-content:flex-start;text-align:right;font-size:clamp(18px,2.2vw,26px);font-weight:800;padding:16px 8%;min-height:72px;transition:filter .2s}
+.opt:hover{filter:brightness(1.25)}
+.opt .k{color:var(--gold);font-weight:900;min-width:34px}
+.opt.hide{visibility:hidden}
+.opt.sel{background:linear-gradient(180deg,#ffb347,#e07b00);border-color:#ffd08a;color:#1b1000}.opt.sel .k{color:#fff}
+.opt.ok{background:linear-gradient(180deg,#3ddc84,#128c3e);border-color:#b9ffd4;color:#fff;animation:blink .35s 4}.opt.ok .k{color:#fff}
+.opt.bad{background:linear-gradient(180deg,#ff5a5a,#a51515);border-color:#ffb3b3}
+@keyframes blink{50%{filter:brightness(1.8)}}
+
+.n{direction:ltr;unicode-bidi:isolate;display:inline-block}
+.acts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;min-height:50px;}
+.btn{font-family:inherit;font-weight:900;font-size:20px;padding:12px 28px;border-radius:40px;border:3px solid var(--gold);background:linear-gradient(180deg,#2b3cb0,#0b1440);color:var(--gold);cursor:pointer}
+.btn.gold{background:linear-gradient(180deg,#ffe28a,#d89b00);color:#2a1a00}
+.sol{display:none;background:rgba(10,20,70,.85);border:2px dashed var(--gold);border-radius:18px;padding:14px 18px;font-size:clamp(17px,2vw,22px);line-height:1.9;font-weight:700}
+.sol.show{display:block;animation:pop .5s}
+.sol b{color:var(--gold)}
+
+/* سلم الجوائز والمودال */
+.ladder{background:linear-gradient(180deg,rgba(20,30,110,.9),rgba(8,12,50,.95));border:3px solid var(--line);border-radius:18px;padding:10px;align-self:start}
+.rung{display:flex;justify-content:space-between;align-items:center;padding:5px 12px;border-radius:10px;font-weight:800;font-size:17px;color:#f0b400}
+.rung .n{color:#9fb0ff;font-size:14px;min-width:26px}
+.rung.safe{color:#fff}
+.rung.done{color:#62e39a}
+.rung.cur{background:linear-gradient(90deg,#ffb347,#e07b00);color:#1b1000;box-shadow:0 0 14px rgba(255,179,71,.7)}
+.rung.cur .n{color:#1b1000}
+.modal{position:fixed;inset:0;background:rgba(0,0,20,.75);display:none;align-items:center;justify-content:center;z-index:30;padding:16px}
+.modal.show{display:flex}
+.box{background:linear-gradient(180deg,#1a2a8a,#0b1440);border:3px solid var(--gold);border-radius:24px;padding:26px;max-width:620px;width:100%;text-align:center;animation:pop .45s cubic-bezier(.2,1.6,.4,1)}
+.box h2{color:var(--gold);font-size:clamp(24px,3.4vw,36px);margin-bottom:12px}
+.box p{font-size:clamp(18px,2.2vw,24px);font-weight:700;line-height:1.8;margin-bottom:14px}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.aud{display:flex;gap:16px;justify-content:center;align-items:flex-end;height:230px;margin:10px 0 16px}
+.aud div{display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:900}
+.aud i{display:block;width:54px;background:linear-gradient(180deg,var(--gold2),#d89b00);border-radius:8px 8px 0 0;height:0;transition:height 1.4s cubic-bezier(.2,1.2,.4,1)}
+
+/* الشاشات الاحتفالية */
+#money{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;z-index:25;pointer-events:none}
+#money.show{display:flex;background:radial-gradient(circle,rgba(5,8,31,.92) 0%,rgba(5,8,31,.75) 45%,rgba(5,8,31,0) 75%)}
+#money .amt{font-size:clamp(60px,12vw,150px);font-weight:900;color:var(--gold);text-shadow:0 0 30px rgba(245,197,66,.8),0 6px 0 #7a5200;animation:zoom 1.6s cubic-bezier(.2,1.6,.4,1)}
+#money .cur{font-size:clamp(26px,4vw,44px);font-weight:900;color:#fff;margin-top:-10px}
+@keyframes zoom{0%{transform:scale(.2);opacity:0}30%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
+.coin{position:fixed;top:-40px;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#f5c542 45%,#b37b00);border:2px solid #8a5d00;z-index:24;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(115vh) rotate(720deg)}}
+.start{text-align:center;padding:30px 10px;display:flex;flex-direction:column;align-items:center;}
+.bigdisc{width:min(300px,60vw);height:min(300px,60vw);margin:0 auto 18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#4a5bd6,#0b1440 70%);border:6px solid var(--gold);display:grid;place-items:center;box-shadow:0 0 50px rgba(245,197,66,.55);animation:pulse 2.4s ease-in-out infinite}
+.bigdisc b{font-size:clamp(28px,5vw,46px);color:var(--gold);line-height:1.4;text-shadow:0 0 14px rgba(245,197,66,.6)}
+@keyframes pulse{50%{box-shadow:0 0 80px rgba(245,197,66,.85)}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px auto;max-width:900px}
+.chips span{border:2px solid var(--line);border-radius:20px;padding:5px 14px;font-weight:700;background:rgba(255,255,255,.06)}
+.credit{display:inline-block;margin-top:16px;border:2px solid var(--gold);border-radius:18px;padding:8px 22px;color:var(--gold2);font-weight:800;font-size:clamp(16px,2vw,21px);background:rgba(0,0,0,.25)}
+.foot{position:fixed;bottom:0;left:0;right:0;text-align:center;padding:6px;font-weight:800;color:var(--gold2);background:rgba(5,8,31,.7);z-index:5;font-size:15px}
+
+/* --- تنسيقات الشيك البنكي --- */
+.check-container {
+    background: #fdfbf7;
+    color: #1a1a1a;
+    border: 3px solid #2b3cb0;
+    border-radius: 12px;
+    padding: 25px;
+    margin: 25px auto;
+    width: 100%;
+    max-width: 650px;
+    position: relative;
+    background-image: repeating-linear-gradient(45deg, rgba(43, 60, 176, 0.03) 25%, transparent 25%, transparent 75%, rgba(43, 60, 176, 0.03) 75%, rgba(43, 60, 176, 0.03)), repeating-linear-gradient(45deg, rgba(43, 60, 176, 0.03) 25%, #fdfbf7 25%, #fdfbf7 75%, rgba(43, 60, 176, 0.03) 75%, rgba(43, 60, 176, 0.03));
+    background-position: 0 0, 10px 10px;
+    background-size: 20px 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    text-align: right;
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+}
+.check-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #2b3cb0;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+.check-header img {
+    height: 75px;
+    object-fit: contain;
+}
+.check-school-info {
+    text-align: right;
+}
+.check-school-info h3 {
+    margin: 0;
+    color: #0b1440;
+    font-size: 24px;
+    font-weight: 900;
+}
+.check-school-info p {
+    margin: 5px 0 0;
+    font-size: 16px;
+    color: #444;
+    font-weight: bold;
+}
+.check-body {
+    font-size: 20px;
+    line-height: 2.2;
+    font-weight: 700;
+}
+.check-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.check-amount-box {
+    border: 2px solid #2b3cb0;
+    padding: 5px 20px;
+    font-weight: 900;
+    font-size: 22px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 8px;
+    color: #a51515;
+}
+.check-signatures {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    border-top: 2px dashed #999;
+    padding-top: 15px;
+}
+.signature-block {
+    text-align: center;
+    width: 45%;
+    font-size: 16px;
+    color: #333;
+}
+.signature-block span {
+    display: block;
+    font-weight: 900;
+    margin-top: 10px;
+    font-size: 18px;
+    color: #16236b;
+}
+
+/* تنسيقات الطباعة */
+@media print {
+    body * { visibility: hidden; }
+    #checkToPrint, #checkToPrint * { visibility: visible; }
+    #checkToPrint {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        box-shadow: none;
+        border: 2px solid #000;
+    }
+    .btn, .top, .foot, #rays { display: none !important; }
+    body { background: none; }
+}
+</style>
+</head>
+<body>
+<div id="rays"></div>
+<div class="wrap">
+ <div class="top"><div class="logo"><div class="disc">م</div><b>من سيربح المليون؟</b></div><div><button class="tb" id="mute" onclick="toggleMute()">🔊 الصوت</button> <button class="tb" onclick="fsx()">⛶ ملء الشاشة</button></div></div>
+ <div id="view"></div>
+</div>
+<div class="foot"></div>
+<div class="modal" id="modal"><div class="box" id="mbox"></div></div>
+<div id="money"><div class="amt" id="mamt"></div><div class="cur">ريال</div></div>
+
+<script>
+// ==========================================
+// ⚙️ إعدادات اللعبة 
+// ==========================================
+const GAME_CONFIG = {
+    subject: "مراجعة الرياضيات للصف السادس",
+    teacherName: "محمد الباز",
+    principalName: "وائل بن محمد جعفرى",
+    schoolName: "مدارس البيارق الأهلية",
+    sectionName: "القسم الابتدائي",
+    timerSeconds: 45 // الوقت المخصص لكل سؤال بالثواني
+};
+
+const A=d=>String(d).replace(/[0-9]/g,c=>'٠١٢٣٤٥٦٧٨٩'[c]).replace(/\./g,'٫');
+const T=s=>String(s).replace(/\d+(?:\.\d+)?/g,m=>'<span class="n">'+A(m)+'</span>');
+const KEYS=['أ','ب','ج','د'];
+const LADDER=[100,200,300,500,1000,2000,4000,8000,16000,32000,64000,125000,250000,500000,1000000];
+const SAFE=[4,9];
+const LESSONS=['تمثيل الكسور العشرية','الوسيط والمنوال والمدى','المتوسط الحسابي'];
+
+// بنك الأسئلة - 15 مستوى للدروس المحددة (الصف السادس)
+// الإجابة الأولى في المصفوفة 'o' هي الصحيحة دائماً وسيتم خلطها برمجياً
+const BANK=[
+ [{l:0, q:'ما هو الكسر العشري الذي يمثل "خمسة من عشرة"؟', o:['0.5','0.05','5.0','50'], e:'خمسة أجزاء من عشرة تُكتب كالتالي: 0.5 (رقم واحد يمين الفاصلة).'}], // المستوى 1
+ [{l:0, q:'الكسر العشري 0.75 يُقرأ:', o:['خمسة وسبعون من مئة','خمسة وسبعون من عشرة','خمسة وسبعون من ألف','سبعة وخمسة'], e:'بما أن هناك رقمين يمين الفاصلة، فإنه يُقرأ من مئة.'}], // المستوى 2
+ [{l:1, q:'ما هو المنوال لمجموعة البيانات التالية: 4, 7, 4, 9, 4, 2؟', o:['4','7','9','2'], e:'المنوال هو القيمة الأكثر تكراراً، وهنا الرقم 4 تكرر 3 مرات.'}], // المستوى 3
+ [{l:0, q:'ما القيمة المنزلية للرقم 3 في العدد 4.132؟', o:['أجزاء من المئة','أجزاء من عشرة','أجزاء من الألف','الآحاد'], e:'الرقم 1 في أجزاء من عشرة، والرقم 3 في أجزاء من المئة.'}], // المستوى 4
+ [{l:1, q:'كيف نحسب المدى لمجموعة من البيانات؟', o:['الفرق بين أكبر قيمة وأصغر قيمة','مجموع البيانات','القيمة في المنتصف','القيمة الأكثر تكراراً'], e:'المدى يمثل مقدار تشتت البيانات، ويُحسب بطرح أصغر قيمة من أكبر قيمة.'}], // المستوى 5 (آمن)
+ [{l:2, q:'كيف نوجد المتوسط الحسابي لمجموعة بيانات؟', o:['مجموع البيانات مقسوماً على عددها','ترتيب البيانات وأخذ المنتصف','طرح أصغر قيمة من أكبر قيمة','اختيار القيمة الأكثر تكراراً'], e:'المتوسط الحسابي هو ناتج قسمة مجموع القيم على عددها.'}], // المستوى 6
+ [{l:0, q:'كيف نكتب الكسر العشري "ثلاثة وأربعة وأربعون من ألف" بالصيغة القياسية؟', o:['3.044','3.44','3.440','34.4'], e:'ثلاثة صحيح، وأربعة وأربعون من ألف تعني 3 أرقام يمين الفاصلة: 3.044'}], // المستوى 7
+ [{l:1, q:'أوجد المدى للبيانات التالية: 15, 8, 22, 10, 5.', o:['17','22','15','5'], e:'أكبر قيمة 22 وأصغر قيمة 5. إذن المدى = 22 - 5 = 17.'}], // المستوى 8
+ [{l:2, q:'احسب المتوسط الحسابي للبيانات: 4, 6, 8.', o:['6','18','4','8'], e:'المجموع = 4+6+8 = 18. المتوسط = 18 ÷ 3 = 6.'}], // المستوى 9
+ [{l:1, q:'ما هو الوسيط للبيانات التالية: 3, 5, 7, 9, 11؟', o:['7','5','9','3'], e:'البيانات مرتبة تصاعدياً، والقيمة التي تقع في المنتصف تماماً هي 7.'}], // المستوى 10 (آمن)
+ [{l:0, q:'ما الصيغة التحليلية للعدد 2.05؟', o:['2 + 0.05','2 + 0.5','20 + 5','2 + 5'], e:'العدد مكون من 2 آحاد و 5 أجزاء من مئة، إذن 2 + 0.05.'}], // المستوى 11
+ [{l:1, q:'أوجد الوسيط للبيانات: 2, 4, 6, 8.', o:['5','4','6','10'], e:'البيانات مرتبة وعددها زوجي، نجمع الرقمين في المنتصف (4+6)=10 ونقسم على 2 = 5.'}], // المستوى 12
+ [{l:2, q:'إذا كان مجموع 4 أعداد هو 40، فما هو المتوسط الحسابي لهذه الأعداد؟', o:['10','40','4','160'], e:'المتوسط الحسابي = المجموع ÷ العدد = 40 ÷ 4 = 10.'}], // المستوى 13
+ [{l:2, q:'حصل طالب على الدرجات 9, 10, 8 في ثلاثة اختبارات. ما متوسط درجاته؟', o:['9','27','8','10'], e:'المجموع = 9+10+8 = 27. المتوسط = 27 ÷ 3 = 9.'}], // المستوى 14
+ [{l:2, q:'إذا كان المتوسط الحسابي لعددين هو 15، وأحد العددين هو 10، فما هو العدد الآخر؟', o:['20','30','5','25'], e:'بما أن المتوسط لعددين 15، فإن مجموعهما = 15 × 2 = 30. العدد الأول 10 إذن الآخر 30 - 10 = 20.'}]  // المستوى 15 (سؤال المليون)
+];
+
+let lvl=0,cur=null,order=[],sel=null,locked=false,used={f:0,p:0,a:0},muted=false,ac,drone=null;
+let playerName = "";
+let timerInterval = null, timeLeft = 0;
+const V=document.getElementById('view');
+
+// تحديث اسم المعلم في الفوتر
+document.querySelector('.foot').innerHTML = `إعداد الأستاذ: ${GAME_CONFIG.teacherName} • ${GAME_CONFIG.schoolName}`;
+
+/* ---------- الصوت ---------- */
+function actx(){ac=ac||new(window.AudioContext||window.webkitAudioContext)();return ac}
+function tone(f,d,type='sine',g=.15,t0=0){if(muted)return;try{const c=actx(),o=c.createOscillator(),v=c.createGain();o.type=type;o.frequency.value=f;o.connect(v);v.connect(c.destination);const t=c.currentTime+t0;v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(g,t+.02);v.gain.exponentialRampToValueAtTime(.001,t+d);o.start(t);o.stop(t+d+.05)}catch(e){}}
+const SFX={
+ q(){[130.8,155.6,196].forEach(f=>tone(f,1.6,'sawtooth',.05));tone(523,1.2,'triangle',.08,.1)},
+ lock(){tone(98,1.2,'sawtooth',.12);tone(196,1.2,'square',.05);tone(392,.6,'triangle',.08,.05)},
+ ok(){[523,659,784,1047].forEach((f,i)=>tone(f,.5,'triangle',.14,i*.1));tone(1319,1.2,'triangle',.12,.45)},
+ bad(){tone(220,.5,'sawtooth',.14);tone(165,.8,'sawtooth',.14,.35)},
+ coin(){for(let i=0;i<6;i++){tone(1760,.25,'sine',.08,i*.09);tone(2637,.2,'sine',.05,i*.09)}},
+ click(){tone(700,.08,'square',.06)},
+ life(){[392,523,659].forEach((f,i)=>tone(f,.4,'triangle',.1,i*.08))},
+ win(){[523,659,784,1047,784,1047,1319,1568].forEach((f,i)=>tone(f,.6,'triangle',.14,i*.14))}
+};
+function startDrone(){stopDrone();if(muted)return;try{const c=actx(),o=c.createOscillator(),l=c.createOscillator(),g=c.createGain(),lg=c.createGain();o.type='sawtooth';o.frequency.value=65.4;l.frequency.value=1.6;lg.gain.value=.025;l.connect(lg);lg.connect(g.gain);g.gain.value=.035;o.connect(g);g.connect(c.destination);o.start();l.start();drone={o,l,g}}catch(e){}}
+function stopDrone(){if(drone){try{drone.o.stop();drone.l.stop()}catch(e){}drone=null}}
+function toggleMute(){muted=!muted;document.getElementById('mute').textContent=muted?'🔇 الصوت':'🔊 الصوت';if(muted)stopDrone();else if(cur&&!locked)startDrone()}
+function fsx(){const d=document;if(!d.fullscreenElement)d.documentElement.requestFullscreen&&d.documentElement.requestFullscreen();else d.exitFullscreen&&d.exitFullscreen()}
+
+/* ---------- العداد الزمني ---------- */
+function startTimer() {
+    clearInterval(timerInterval);
+    timeLeft = GAME_CONFIG.timerSeconds;
+    const tBox = document.getElementById('qTimer');
+    if(!tBox) return;
+    tBox.textContent = A(timeLeft);
+    tBox.classList.remove('danger');
+    
+    timerInterval = setInterval(() => {
+        if(locked) return clearInterval(timerInterval);
+        timeLeft--;
+        tBox.textContent = A(timeLeft);
+        if(timeLeft <= 10) tBox.classList.add('danger');
+        if(timeLeft <= 0) {
+            clearInterval(timerInterval);
+            timeOutLose();
+        }
+    }, 1000);
+}
+
+function timeOutLose() {
+    locked = true;
+    stopDrone();
+    SFX.bad();
+    const right = order.indexOf(0);
+    document.getElementById('o'+right).classList.add('ok');
+    const safe = SAFE.filter(i => i < lvl).pop();
+    const won = safe === undefined ? 0 : LADDER[safe];
+    document.getElementById('acts').innerHTML = `<button class="btn gold" onclick="endScreen(${won}, false, 'انتهى الوقت!')">انتهت اللعبة</button>`;
+}
+
+/* ---------- توليد الشيك ---------- */
+function generateCheckHTML(amount) {
+    if (amount === 0) return ''; 
+    const today = new Date().toLocaleDateString('ar-EG');
+    return `
+    <div class="check-container" id="checkToPrint">
+        <div class="check-header">
+            <img src="WhatsApp Image 2026-10-02 at 1.32.35 PM.jpeg" alt="شعار المدارس" onerror="this.style.display='none'">
+            <div class="check-school-info">
+                <h3>${GAME_CONFIG.schoolName}</h3>
+                <p>${GAME_CONFIG.sectionName}</p>
+            </div>
+        </div>
+        <div class="check-body">
+            <div class="check-row">
+                <span>التاريخ: ${today}</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                ادفعوا بموجب هذا الشيك لأمر البطل: <strong style="color:var(--navy2); font-size:24px">${playerName}</strong>
+            </div>
+            <div class="check-row">
+                <span>مبلغاً وقدره: <span class="check-amount-box">${A(amount)} ريال</span></span>
+            </div>
+        </div>
+        <div class="check-signatures">
+            <div class="signature-block">
+                معلم المادة
+                <span>${GAME_CONFIG.teacherName}</span>
+            </div>
+            <div class="signature-block">
+                مدير المدرسة
+                <span>${GAME_CONFIG.principalName}</span>
+            </div>
+        </div>
+        <button onclick="window.print()" class="btn gold" style="margin-top:20px; width:100%; display:block;" id="printBtn">🖨️ طباعة الشيك للطالب</button>
+    </div>
+    `;
+}
+
+/* ---------- الشاشات وإدارة اللعبة ---------- */
+function startScreen(){
+ stopDrone();cur=null; clearInterval(timerInterval);
+ V.innerHTML=`<div class="start">
+  <div class="bigdisc"><b>من سيربح<br>المليون؟</b></div>
+  <h2 style="color:#ffdf7e;font-size:clamp(22px,3vw,32px)">${GAME_CONFIG.subject}</h2>
+  <input type="text" id="pName" class="name-input" placeholder="اكتب اسم الطالب هنا..." autocomplete="off">
+  <div class="chips">${LESSONS.map(x=>`<span>${x}</span>`).join('')}</div>
+  <button class="btn gold" onclick="newGame()">ابدأ اللعب 🎮</button>
+ </div>`
+}
+
+function newGame(){
+ const nInput = document.getElementById('pName');
+ playerName = nInput && nInput.value.trim() !== "" ? nInput.value : "البطل المجهول";
+ lvl=0;used={f:0,p:0,a:0};SFX.life();ask()
+}
+
+function ladderHTML(){return LADDER.map((m,i)=>({m,i})).reverse().map(({m,i})=>`<div class="rung${SAFE.includes(i)?' safe':''}${i<lvl?' done':''}${i===lvl?' cur':''}"><span class="n">${A(i+1)}</span><span>${i<lvl?'✓ ':''}${fmt(m)}</span></div>`).join('')}
+function fmt(m){return A(Number(m).toLocaleString('en').replace(/,/g,'٬'))}
+
+function ask(){
+ const pool=BANK[lvl];cur=pool[Math.floor(Math.random()*pool.length)];sel=null;locked=false;
+ order=[0,1,2,3];for(let i=3;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
+ 
+ V.innerHTML=`<div class="game"><div class="stage">
+  <div class="timer-box" id="qTimer">${A(GAME_CONFIG.timerSeconds)}</div>
+  <div class="lifes"><button class="life${used.f?' used':''}" onclick="fifty()">٥٠:٥٠<small>حذف إجابتين</small></button><button class="life${used.p?' used':''}" onclick="phone()">📞<small>اتصال بصديق</small></button><button class="life${used.a?' used':''}" onclick="audience()">👥<small>رأي الجمهور</small></button></div>
+  <div class="lesson">البطل: ${playerName} • السؤال ${A(lvl+1)} مقابل ${fmt(LADDER[lvl])} ريال<br><span style="font-size:13px; color:#aaa">الدرس: ${LESSONS[cur.l]}</span></div>
+  <div class="bar qbar"><div>${T(cur.q)}</div></div>
+  <div class="opts">${order.map((oi,k)=>`<div class="bar opt" id="o${k}" onclick="pick(${k})"><span class="k">${KEYS[k]}:</span><span>${T(cur.o[oi])}</span></div>`).join('')}</div>
+  <div class="sol" id="sol"></div>
+  <div class="acts" id="acts"><button class="btn" onclick="walk()">انسحب بـ ${fmt(lvl?LADDER[lvl-1]:0)} ريال</button></div>
+ </div><div class="ladder">${ladderHTML()}</div></div>`;
+ 
+ SFX.q();
+ setTimeout(startDrone,600);
+ startTimer(); // تشغيل العداد
+}
+
+function pick(k){
+ if(locked)return;
+ const el=document.getElementById('o'+k);if(el.classList.contains('hide'))return;
+ SFX.click();
+ clearInterval(timerInterval); // إيقاف العداد للتفكير
+ document.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');sel=k;
+ modal(`<h2>هل هذه إجابتك النهائية؟</h2><p>${KEYS[k]}: ${T(cur.o[order[k]])}</p><div class="acts"><button class="btn gold" onclick="final()">نعم، نهائية</button><button class="btn" onclick="cancelSel()">لا، سأفكر</button></div>`)
+}
+
+function cancelSel(){
+ closeModal();
+ document.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));
+ sel=null;
+ startTimer(); // استكمال العداد
+}
+
+function final(){
+ closeModal();locked=true;stopDrone();SFX.lock();
+ clearInterval(timerInterval); // تأكيد إيقاف العداد
+ const right=order.indexOf(0),k=sel;
+ 
+ setTimeout(()=>{
+  document.getElementById('o'+right).classList.add('ok');
+  const sol=document.getElementById('sol');
+  if(cur.e) sol.innerHTML=`<b>معلومة إضافية:</b> ${T(cur.e)}`;
+  
+  if(k===right){
+   SFX.ok();document.getElementById('o'+k).classList.remove('sel');
+   setTimeout(()=>{
+    showMoney(LADDER[lvl]);
+    sol.classList.add('show');
+    
+    // الانتقال التلقائي مبرمج هنا
+    const last=lvl===LADDER.length-1;
+    if(last){
+     document.getElementById('acts').innerHTML=`<button class="btn gold" onclick="winScreen()">🏆 استلم المليون</button>`;
+     lvl++;document.querySelector('.ladder').innerHTML=ladderHTML();lvl--;
+    } else {
+     document.getElementById('acts').innerHTML=`<span style="color:var(--gold2);font-weight:bold;font-size:18px;background:rgba(0,0,0,0.5);padding:8px 15px;border-radius:20px;">إجابة صحيحة! ننتقل للسؤال التالي تلقائياً... ⏳</span>`;
+     lvl++;
+     document.querySelector('.ladder').innerHTML=ladderHTML();
+     setTimeout(ask, 4500); // الانتظار 4.5 ثوانٍ لقراءة المعلومة ثم الانتقال تلقائياً
+    }
+   },900);
+  }else{
+   SFX.bad();const e=document.getElementById('o'+k);e.classList.remove('sel');e.classList.add('bad');sol.classList.add('show');
+   const safe=SAFE.filter(i=>i<lvl).pop();const won=safe===undefined?0:LADDER[safe];
+   document.getElementById('acts').innerHTML=`<button class="btn gold" onclick="endScreen(${won},false,'إجابة خاطئة!')">انتهت اللعبة، تربح ${fmt(won)} ريال</button>`
+  }
+ },2600)
+}
+
+function walk(){
+ if(locked)return;
+ stopDrone(); locked=true; clearInterval(timerInterval);
+ const won=lvl?LADDER[lvl-1]:0;
+ const right=order.indexOf(0);
+ document.getElementById('o'+right).classList.add('ok');
+ const sol=document.getElementById('sol');
+ if(cur.e) sol.innerHTML=`<b>الحل:</b> ${T(cur.e)}`;
+ sol.classList.add('show');
+ document.getElementById('acts').innerHTML=`<button class="btn gold" onclick="endScreen(${won},true)">انسحبت بـ ${fmt(won)} ريال</button>`
+}
+
+function fifty(){if(used.f||locked)return;used.f=1;SFX.life();const wrong=order.map((oi,k)=>({oi,k})).filter(x=>x.oi!==0);wrong.sort(()=>Math.random()-.5).slice(0,2).forEach(x=>document.getElementById('o'+x.k).classList.add('hide'));document.querySelectorAll('.life')[0].classList.add('used')}
+function visible(){return [0,1,2,3].filter(k=>!document.getElementById('o'+k).classList.contains('hide'))}
+function phone(){if(used.p||locked)return;used.p=1;SFX.life();document.querySelectorAll('.life')[1].classList.add('used');
+ const right=order.indexOf(0),vis=visible();const sure=Math.random()<.85;const guess=sure?right:vis.filter(k=>k!==right)[0];const pct=sure?70+Math.floor(Math.random()*25):40+Math.floor(Math.random()*15);
+ clearInterval(timerInterval); // إيقاف العداد أثناء الاتصال
+ modal(`<h2>📞 اتصال بصديق</h2><p>صديقك يفكر قليلًا...</p><p id="fr" style="opacity:0;transition:opacity .8s">🗣️ «أعتقد أن الإجابة هي <b style="color:#f5c542">${KEYS[guess]}</b>، وأنا متأكد بنسبة ${A(pct)}٪»</p><button class="btn gold" onclick="closeModal();startTimer()">شكرًا</button>`);
+ setTimeout(()=>{const f=document.getElementById('fr');if(f)f.style.opacity=1},1500)}
+function audience(){if(used.a||locked)return;used.a=1;SFX.life();document.querySelectorAll('.life')[2].classList.add('used');
+ const right=order.indexOf(0),vis=visible();let p=[0,0,0,0];let rest=100;const top=45+Math.floor(Math.random()*30);p[right]=top;rest-=top;
+ const others=vis.filter(k=>k!==right);others.forEach((k,i)=>{const v=i===others.length-1?rest:Math.floor(Math.random()*rest);p[k]=v;rest-=v});
+ clearInterval(timerInterval); // إيقاف العداد أثناء رأي الجمهور
+ modal(`<h2>👥 رأي الجمهور</h2><div class="aud">${[0,1,2,3].map(k=>`<div><span>${A(p[k])}٪</span><i data-h="${p[k]*2}"></i><span style="color:#f5c542">${KEYS[k]}</span></div>`).join('')}</div><button class="btn gold" onclick="closeModal();startTimer()">حسنًا</button>`);
+ setTimeout(()=>document.querySelectorAll('.aud i').forEach(i=>i.style.height=i.dataset.h+'px'),80)}
+
+function modal(h){document.getElementById('mbox').innerHTML=h;document.getElementById('modal').classList.add('show')}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+function showMoney(m){const M=document.getElementById('money');document.getElementById('mamt').textContent=fmt(m);M.classList.add('show');SFX.coin();
+ for(let i=0;i<40;i++){const c=document.createElement('div');c.className='coin';c.style.left=Math.random()*100+'vw';c.style.animationDuration=(1.6+Math.random()*1.6)+'s';c.style.animationDelay=Math.random()*.5+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),4000)}
+ setTimeout(()=>M.classList.remove('show'),2000)}
+
+function endScreen(won, walked, msg=""){
+ stopDrone();cur=null; clearInterval(timerInterval);
+ V.innerHTML=`<div class="start">
+  <div class="bigdisc"><b>${fmt(won)}<br><small style="font-size:.6em">ريال</small></b></div>
+  <h2 style="color:#ffdf7e;font-size:clamp(24px,3.4vw,38px)">${msg} ${walked?'قرار حكيم يا '+playerName+'!':'أحسنت المحاولة يا '+playerName}</h2>
+  <p style="font-size:22px;margin:10px 0 18px">وصلت إلى السؤال ${A(lvl+1)} من ${A(15)}</p>
+  ${generateCheckHTML(won)}
+  <br><br>
+  <button class="btn gold" onclick="newGame()">🔁 لاعب جديد</button> <button class="btn" onclick="startScreen()">🏠 الشاشة الرئيسية</button>
+ </div>`
+}
+
+function winScreen(){
+ stopDrone();cur=null;SFX.win(); clearInterval(timerInterval);
+ for(let r=0;r<3;r++)setTimeout(()=>showMoney(1000000),r*2200);
+ V.innerHTML=`<div class="start">
+  <div class="bigdisc"><b>مليونير<br>الرياضيات</b></div>
+  <h2 style="color:#ffdf7e;font-size:clamp(26px,4vw,44px)">🏆 مبروك يا ${playerName}! ربحت المليون 🏆</h2>
+  <p style="font-size:22px;margin:10px 0 18px">أجبت عن الأسئلة الخمسة عشر كلها إجابة صحيحة</p>
+  ${generateCheckHTML(1000000)}
+  <br><br>
+  <button class="btn gold" onclick="newGame()">🔁 لاعب جديد</button> <button class="btn" onclick="startScreen()">🏠 الشاشة الرئيسية</button>
+ </div>`
+}
+startScreen();
+</script>
+</body>
+</html>
